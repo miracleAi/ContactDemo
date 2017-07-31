@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import com.example.zhulinping.contactdemo.R;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +43,7 @@ public class ContactFragment extends Fragment implements ContactContact.View {
     private void intiView() {
         mRecyclerView = (RecyclerView) mContentView.findViewById(R.id.contact_lv);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-        mAdapter = new ContactAdapter();
+        mAdapter = new ContactAdapter(new ArrayList<ContactInfo>());
         mRecyclerView.setAdapter(mAdapter);
     }
 

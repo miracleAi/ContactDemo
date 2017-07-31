@@ -8,15 +8,14 @@ import java.util.List;
 
 public class ContactDbInfo {
     public static final int IS_FAVOURITE = 1;
+    public String contactId;
     private String contactName;
-    private String sortKeyName;
     private String photo;
     private String photoThumbnail;
     private List<String> phoneNumList;
     private List<String> emailList;
     //是否已收藏 ：1-收藏 0-未收藏
     private int isFavourite;
-    private long lastContactTime;
 
     public String getContactName() {
         return contactName;
@@ -24,14 +23,6 @@ public class ContactDbInfo {
 
     public void setContactName(String contactName) {
         this.contactName = contactName;
-    }
-
-    public String getSortKeyName() {
-        return sortKeyName;
-    }
-
-    public void setSortKeyName(String sortKeyName) {
-        this.sortKeyName = sortKeyName;
     }
 
     public String getPhoto() {
@@ -44,6 +35,14 @@ public class ContactDbInfo {
 
     public String getPhotoThumbnail() {
         return photoThumbnail;
+    }
+
+    public String getContactId() {
+        return contactId;
+    }
+
+    public void setContactId(String contactId) {
+        this.contactId = contactId;
     }
 
     public void setPhotoThumbnail(String photoThumbnail) {
@@ -72,13 +71,5 @@ public class ContactDbInfo {
 
     public void setIsFavourite(int isFavourite) {
         this.isFavourite = isFavourite;
-    }
-
-    public long getLastContactTime() {
-        return lastContactTime;
-    }
-
-    public void setLastContactTime(long lastContactTime) {
-        this.lastContactTime = lastContactTime;
     }
 }

@@ -17,6 +17,5 @@ public class ContactContact {
         void showErrorLayout();
     }
     interface Presenter extends BasePresenter{
-        void getContactList();
     }
 }

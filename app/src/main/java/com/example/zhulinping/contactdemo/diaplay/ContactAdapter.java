@@ -2,6 +2,7 @@ package com.example.zhulinping.contactdemo.diaplay;
 
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,9 @@ import java.util.List;
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactHolder>{
     List<ContactInfo> contactList;
     String lastLetter = "";
+    public ContactAdapter(List<ContactInfo> list){
+        setContactList(list);
+    }
     public void setContactList(List<ContactInfo> list){
         contactList = list;
     }
@@ -48,10 +52,18 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactH
             holder.indexTv.setVisibility(View.GONE);
         }else{
             if(info.getIsFavourite() == ContactDbInfo.IS_FAVOURITE){
-                holder.indexTv.setText("Favourite");
+                if(lastLetter.equals("Favourite")){
+                    holder.indexTv.setVisibility(View.GONE);
+                }else{
+                    holder.indexTv.setText("Favourite");
+                }
                 lastLetter = "Favourite";
             }else if(info.getIsRecentContact() == ContactInfo.IS_RECENT){
-                holder.indexTv.setText("Rescent");
+                if(lastLetter.equals("Recent")){
+                    holder.indexTv.setVisibility(View.GONE);
+                }else{
+                    holder.indexTv.setText("Recent");
+                }
                 lastLetter = "Recent";
             }else{
                 holder.indexTv.setText(info.getFirstLetter());

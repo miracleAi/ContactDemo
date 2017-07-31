@@ -21,7 +21,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String CONTACT_FRAGMENT = "MainActivity.contactFtagment";
-    private static final String REQUIRED_PERMISSIONS = Manifest.permission.READ_CONTACTS;
+    private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.READ_CONTACTS,Manifest.permission.READ_CALL_LOG};
     private static final int PERMISSIONS_REQUEST = 0;
     protected FragmentManager mFragmentManager;
     protected Fragment mCurrentFragment = null;
@@ -57,17 +57,19 @@ public class MainActivity extends AppCompatActivity {
         new ContactPresenter(new ContactDataHelper(getApplicationContext()),(ContactFragment)mCurrentFragment);
     }
     private boolean checkPermission() {
-            if (ContextCompat.checkSelfPermission(this, REQUIRED_PERMISSIONS)
+        for(String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission)
                     != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
+        }
         return true;
     }
 
     private void requestPermissions() {
         ActivityCompat.requestPermissions(
                 this,
-                new String[]{REQUIRED_PERMISSIONS},
+                REQUIRED_PERMISSIONS,
                 PERMISSIONS_REQUEST);
     }
     private boolean allResultGranted(int[] grantResults) {

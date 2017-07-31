@@ -13,5 +13,5 @@ public interface IContactDataHelper {
         void onContactListLoaded(List<ContactInfo> list);
         void onContactListNotAvailable();
     }
-    void getAllContactList(ContactLoadCallback callback);
+    void getAllContactList(ContactLoadCallback callback,int days,int count);
 }

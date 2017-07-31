@@ -1,5 +1,7 @@
 package com.example.zhulinping.contactdemo.diaplay;
 
+import android.util.Log;
+
 import com.example.zhulinping.contactdemo.contactdata.IContactDataHelper;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 
@@ -20,12 +22,11 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
     }
     @Override
     public void start() {
-        getContactList();
+        getContactList(3,5);
     }
 
-    @Override
-    public void getContactList() {
-        mDadaHelper.getAllContactList(this);
+    public void getContactList(int days,int count) {
+        mDadaHelper.getAllContactList(this,days,count);
     }
 
     @Override
