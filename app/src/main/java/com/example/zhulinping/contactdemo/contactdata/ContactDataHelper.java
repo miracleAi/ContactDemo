@@ -50,6 +50,7 @@ public class ContactDataHelper implements IContactDataHelper {
         while (cursor.moveToNext()) {
             ContactInfo contact = createContactInfo(cursor, contentResolver);
             contact.setIsFavourite(ContactDbInfo.IS_FAVOURITE);
+            contact.setIndexFlag(ContactInfo.FAVOURITE_FLAG);
             list.add(contact);
             mFavouroteNames.add(contact.getContactName());
         }
@@ -107,9 +108,11 @@ public class ContactDataHelper implements IContactDataHelper {
             contact.setIsFavourite(0);
             if (recentList.size() < count && null != callLogList && callLogList.contains(contact.getContactName())) {
                 contact.setIsRecentContact(ContactInfo.IS_RECENT);
+                contact.setIndexFlag(ContactInfo.RECENT_FLAG);
                 recentList.add(contact);
             } else {
                 contact.setIsRecentContact(0);
+                contact.setIndexFlag(contact.getFirstLetter());
                 nomalList.add(contact);
             }
         }
@@ -175,6 +178,7 @@ public class ContactDataHelper implements IContactDataHelper {
                             ArrayList<ContactInfo> nList, ContactLoadCallback callback) {
         ArrayList<ContactInfo> allList = new ArrayList<>();
         if (null != fList) {
+            Collections.sort(fList,new SortByFirstComparator());
             allList.addAll(fList);
         }
         if (null != rList) {

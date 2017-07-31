@@ -10,9 +10,20 @@ import java.util.List;
 
 public class ContactInfo extends ContactDbInfo{
     public static final int IS_RECENT = 1;
+    public static final String FAVOURITE_FLAG = "FAVOURITE";
+    public static final String RECENT_FLAG = "RECENT";
     //是否是最近联系热 1-是 0-不是
     private int isRecentContact;
     private String firstLetter;
+    private String indexFlag;
+
+    public String getIndexFlag() {
+        return indexFlag;
+    }
+
+    public void setIndexFlag(String indexFlag) {
+        this.indexFlag = indexFlag;
+    }
 
     public long getLastContactTime() {
         return lastContactTime;

@@ -20,8 +20,6 @@ import java.util.List;
  */
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactHolder> {
-    private static final String FAVOURITE_FLAG = "FAVOURITE";
-    private static final String RECENT_FLAG = "RECENT";
     List<ContactInfo> contactList;
     String lastLetter = "";
 
@@ -52,55 +50,37 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactH
         if (info.getPhoneNumList() != null && info.getPhoneNumList().size() > 0) {
             holder.phoneTv.setText(info.getPhoneNumList().get(0));
         }
-        if (info.getIsFavourite() == ContactDbInfo.IS_FAVOURITE) {
-            if (lastLetter.equals(FAVOURITE_FLAG)) {
-                holder.indexTv.setVisibility(View.GONE);
-            } else {
-                holder.indexTv.setVisibility(View.VISIBLE);
-                holder.indexTv.setText(FAVOURITE_FLAG);
-            }
-            lastLetter = FAVOURITE_FLAG;
-        } else if (info.getIsRecentContact() == ContactInfo.IS_RECENT) {
-            if (lastLetter.equals(RECENT_FLAG)) {
-                holder.indexTv.setVisibility(View.GONE);
-            } else {
-                holder.indexTv.setVisibility(View.VISIBLE);
-                holder.indexTv.setText(RECENT_FLAG);
-            }
-            lastLetter = RECENT_FLAG;
+        if (position > 0) {
+            lastLetter = contactList.get(position - 1).getIndexFlag();
         } else {
-            if (position > 0) {
-                lastLetter = contactList.get(position - 1).getFirstLetter();
-            }else{
-                lastLetter = "";
-            }
-            if (lastLetter.equals(info.getFirstLetter())) {
-                holder.indexTv.setVisibility(View.GONE);
-            } else {
-                holder.indexTv.setVisibility(View.VISIBLE);
-                holder.indexTv.setText(info.getFirstLetter());
-            }
+            lastLetter = "";
+        }
+        if (lastLetter.equals(info.getIndexFlag())) {
+            holder.indexTv.setVisibility(View.GONE);
+        } else {
+            holder.indexTv.setText(info.getIndexFlag());
+            holder.indexTv.setVisibility(View.VISIBLE);
         }
 
-    }
+}
 
     @Override
     public int getItemCount() {
         return contactList.size();
     }
 
-    class ContactHolder extends RecyclerView.ViewHolder {
-        TextView nameTv;
-        ImageView headImv;
-        TextView phoneTv;
-        TextView indexTv;
+class ContactHolder extends RecyclerView.ViewHolder {
+    TextView nameTv;
+    ImageView headImv;
+    TextView phoneTv;
+    TextView indexTv;
 
-        public ContactHolder(View itemView) {
-            super(itemView);
-            nameTv = (TextView) itemView.findViewById(R.id.name_tv);
-            headImv = (ImageView) itemView.findViewById(R.id.head_imv);
-            phoneTv = (TextView) itemView.findViewById(R.id.phone_tv);
-            indexTv = (TextView) itemView.findViewById(R.id.index_tv);
-        }
+    public ContactHolder(View itemView) {
+        super(itemView);
+        nameTv = (TextView) itemView.findViewById(R.id.name_tv);
+        headImv = (ImageView) itemView.findViewById(R.id.head_imv);
+        phoneTv = (TextView) itemView.findViewById(R.id.phone_tv);
+        indexTv = (TextView) itemView.findViewById(R.id.index_tv);
     }
+}
 }
