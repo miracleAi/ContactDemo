@@ -20,6 +20,8 @@ import java.util.List;
  */
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactHolder>{
+    private static final String FAVOURITE_FLAG = "FAVOURITE";
+    private static final String RECENT_FLAG = "RECENT";
     List<ContactInfo> contactList;
     String lastLetter = "";
     public ContactAdapter(List<ContactInfo> list){
@@ -52,19 +54,19 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactH
             holder.indexTv.setVisibility(View.GONE);
         }else{
             if(info.getIsFavourite() == ContactDbInfo.IS_FAVOURITE){
-                if(lastLetter.equals("Favourite")){
+                if(lastLetter.equals(FAVOURITE_FLAG)){
                     holder.indexTv.setVisibility(View.GONE);
                 }else{
-                    holder.indexTv.setText("Favourite");
+                    holder.indexTv.setText(FAVOURITE_FLAG);
                 }
-                lastLetter = "Favourite";
+                lastLetter = FAVOURITE_FLAG;
             }else if(info.getIsRecentContact() == ContactInfo.IS_RECENT){
-                if(lastLetter.equals("Recent")){
+                if(lastLetter.equals(RECENT_FLAG)){
                     holder.indexTv.setVisibility(View.GONE);
                 }else{
-                    holder.indexTv.setText("Recent");
+                    holder.indexTv.setText(RECENT_FLAG);
                 }
-                lastLetter = "Recent";
+                lastLetter = RECENT_FLAG;
             }else{
                 holder.indexTv.setText(info.getFirstLetter());
                 lastLetter = info.getFirstLetter();

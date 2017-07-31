@@ -22,6 +22,7 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
     }
     @Override
     public void start() {
+        //TODO:在这里获取最近联系人的时间和个数限制
         getContactList(3,5);
     }
 

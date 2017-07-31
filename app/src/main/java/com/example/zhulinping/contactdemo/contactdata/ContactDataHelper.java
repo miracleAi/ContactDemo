@@ -13,8 +13,11 @@ import com.example.zhulinping.contactdemo.contactdata.model.ContactDbInfo;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 import com.example.zhulinping.contactdemo.diaplay.ContactContact;
 import com.example.zhulinping.contactdemo.utils.CnToSpell;
+import com.example.zhulinping.contactdemo.utils.SortByTimeComparator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -23,7 +26,10 @@ import java.util.List;
 
 public class ContactDataHelper implements IContactDataHelper {
     private Context mContext;
-    private ArrayList<String> mFavouroteIds = new ArrayList<>();
+    //用于排除与最近联系人重合部分
+    private ArrayList<String> mFavouroteNames = new ArrayList<>();
+    //用于添加最近联系时间
+    private HashMap<String, Long> mRecentMap = new HashMap<>();
 
     public ContactDataHelper(Context context) {
         mContext = context;
@@ -39,12 +45,12 @@ public class ContactDataHelper implements IContactDataHelper {
             return null;
         }
         ArrayList<ContactInfo> list = new ArrayList<>();
-        mFavouroteIds.clear();
+        mFavouroteNames.clear();
         while (cursor.moveToNext()) {
             ContactInfo contact = createContactInfo(cursor, contentResolver);
             contact.setIsFavourite(ContactDbInfo.IS_FAVOURITE);
             list.add(contact);
-            mFavouroteIds.add(contact.getContactName());
+            mFavouroteNames.add(contact.getContactName());
         }
         if (null != cursor) {
             cursor.close();
@@ -58,22 +64,26 @@ public class ContactDataHelper implements IContactDataHelper {
         ContentResolver contentResolver = mContext.getContentResolver();
         @SuppressLint("MissingPermission") Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, //系统方式获取通讯录存储地址
                 new String[]{CallLog.Calls.CACHED_NAME,  //姓名
-                }, CallLog.Calls.DATE+">="+String.valueOf(time), null, CallLog.Calls.DEFAULT_SORT_ORDER);
+                        CallLog.Calls.DATE}, CallLog.Calls.DATE + ">=" + String.valueOf(time), null,
+                CallLog.Calls.DEFAULT_SORT_ORDER);
 
         if (null == cursor || cursor.getCount() == 0) {
             return null;
         }
-        Log.d("mytest", "cursor size " + cursor.getCount());
-
         ArrayList<String> recentList = new ArrayList<>();
+        mRecentMap.clear();
         while (cursor.moveToNext()) {
             String contactName = cursor.getString(cursor.getColumnIndex(
                     CallLog.Calls.CACHED_NAME));
-            if (!mFavouroteIds.contains(contactName)) {
+            if (!mFavouroteNames.contains(contactName)) {
                 recentList.add(contactName);
+                long contactTime = cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE));
+                mRecentMap.put(contactName,contactTime);
             }
         }
-        Log.d("mytest", "list size " + recentList.size());
+        if(null != cursor){
+            cursor.close();
+        }
         return recentList;
     }
 
@@ -106,7 +116,6 @@ public class ContactDataHelper implements IContactDataHelper {
         }
         convertList(favouriteList, recentList, nomalList, callback);
     }
-
     public ContactInfo createContactInfo(Cursor cursor, ContentResolver contentResolver) {
         ContactInfo contact = new ContactInfo();
         String contactId = cursor.getString(cursor.getColumnIndex(
@@ -167,6 +176,7 @@ public class ContactDataHelper implements IContactDataHelper {
             allList.addAll(fList);
         }
         if (null != rList) {
+            Collections.sort(rList,new SortByTimeComparator());
             allList.addAll(rList);
         }
         if (null != nList) {
@@ -188,6 +198,5 @@ public class ContactDataHelper implements IContactDataHelper {
                 return "#";
             }
         }
-
     }
 }
