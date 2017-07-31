@@ -13,6 +13,8 @@ import java.util.List;
  */
 
 public class ContactPresenter implements ContactContact.Presenter,IContactDataHelper.ContactLoadCallback{
+    public static  int RECENT_DAYS = 3;
+    public static int RECENT_COUNT = 5;
     private IContactDataHelper mDadaHelper;
     private ContactContact.View mContactView;
     public ContactPresenter(IContactDataHelper dataHelper, ContactContact.View contactView){
@@ -23,11 +25,13 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
     @Override
     public void start() {
         //TODO:在这里获取最近联系人的时间和个数限制
-        getContactList(3,5);
+        RECENT_DAYS = 3;
+        RECENT_COUNT = 5;
+        getContactList();
     }
-
-    public void getContactList(int days,int count) {
-        mDadaHelper.getAllContactList(this,days,count);
+    @Override
+    public void getContactList() {
+        mDadaHelper.getAllContactList(this,RECENT_DAYS,RECENT_COUNT);
     }
 
     @Override

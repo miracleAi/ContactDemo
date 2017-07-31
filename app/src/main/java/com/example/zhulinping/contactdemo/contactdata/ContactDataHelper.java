@@ -13,6 +13,7 @@ import com.example.zhulinping.contactdemo.contactdata.model.ContactDbInfo;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 import com.example.zhulinping.contactdemo.diaplay.ContactContact;
 import com.example.zhulinping.contactdemo.utils.CnToSpell;
+import com.example.zhulinping.contactdemo.utils.SortByFirstComparator;
 import com.example.zhulinping.contactdemo.utils.SortByTimeComparator;
 
 import java.util.ArrayList;
@@ -93,7 +94,8 @@ public class ContactDataHelper implements IContactDataHelper {
         ArrayList<String> callLogList = getRecentContact(days);
         ContentResolver contentResolver = mContext.getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,
-                ContactsContract.Contacts.STARRED + "=0", null, ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
+                ContactsContract.Contacts.STARRED + "=0", null,
+                ContactsContract.Contacts.DISPLAY_NAME + " ASC");
         if (null == cursor || cursor.getCount() <= 0) {
             callback.onContactListNotAvailable();
             return;
@@ -180,6 +182,7 @@ public class ContactDataHelper implements IContactDataHelper {
             allList.addAll(rList);
         }
         if (null != nList) {
+            Collections.sort(nList,new SortByFirstComparator());
             allList.addAll(nList);
         }
         callback.onContactListLoaded(allList);
