@@ -1,5 +1,6 @@
 package com.example.zhulinping.contactdemo.diaplay;
 
+import android.app.Activity;
 import android.util.Log;
 
 import com.example.zhulinping.contactdemo.contactdata.IContactDataHelper;
@@ -7,6 +8,8 @@ import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.os.AsyncTask.execute;
 
 /**
  * Created by zhulinping on 2017/7/28.
@@ -17,7 +20,9 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
     public static int RECENT_COUNT = 5;
     private IContactDataHelper mDadaHelper;
     private ContactContact.View mContactView;
-    public ContactPresenter(IContactDataHelper dataHelper, ContactContact.View contactView){
+    private Activity mActivity;
+    public ContactPresenter(Activity activity,IContactDataHelper dataHelper, ContactContact.View contactView){
+        mActivity = activity;
         mDadaHelper = dataHelper;
         mContactView = contactView;
         mContactView.setPresenter(this);
@@ -31,16 +36,31 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
     }
     @Override
     public void getContactList() {
-        mDadaHelper.getAllContactList(this,RECENT_DAYS,RECENT_COUNT);
+        execute(new Runnable() {
+            @Override
+            public void run() {
+                mDadaHelper.getAllContactList(ContactPresenter.this,RECENT_DAYS,RECENT_COUNT);
+            }
+        });
     }
 
     @Override
-    public void onContactListLoaded(List<ContactInfo> list) {
-        mContactView.showContactList(list);
+    public void onContactListLoaded(final List<ContactInfo> list) {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mContactView.showContactList(list);
+            }
+        });
     }
 
     @Override
     public void onContactListNotAvailable() {
-        mContactView.showErrorLayout();
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mContactView.showErrorLayout();
+            }
+        });
     }
 }

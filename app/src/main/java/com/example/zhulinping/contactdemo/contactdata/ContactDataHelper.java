@@ -96,7 +96,7 @@ public class ContactDataHelper implements IContactDataHelper {
         ContentResolver contentResolver = mContext.getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,
                 ContactsContract.Contacts.STARRED + "=0", null,
-                ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+                ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
         if (null == cursor || cursor.getCount() <= 0) {
             callback.onContactListNotAvailable();
             return;

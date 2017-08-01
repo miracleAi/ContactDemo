@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.zhulinping.contactdemo.contactdata.ContactDataHelper;
 import com.example.zhulinping.contactdemo.diaplay.ContactFragment;
+import com.example.zhulinping.contactdemo.diaplay.ContactIndexFragment;
 import com.example.zhulinping.contactdemo.diaplay.ContactPresenter;
 
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         if (CONTACT_FRAGMENT.equals(tag)) {
             Fragment fragment = mFragmentManager.findFragmentByTag(CONTACT_FRAGMENT);
             if (null == fragment) {
-                fragment = new ContactFragment();
+                fragment = new ContactIndexFragment();
                 ft.add(R.id.activity_content, fragment, CONTACT_FRAGMENT);
             } else {
                 ft.show(fragment);
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             mCurrentFragment = fragment;
         }
         ft.commitAllowingStateLoss();
-        new ContactPresenter(new ContactDataHelper(getApplicationContext()),(ContactFragment)mCurrentFragment);
+        new ContactPresenter(MainActivity.this,new ContactDataHelper(getApplicationContext()),(ContactIndexFragment)mCurrentFragment);
     }
     private boolean checkPermission() {
         for(String permission : REQUIRED_PERMISSIONS) {
