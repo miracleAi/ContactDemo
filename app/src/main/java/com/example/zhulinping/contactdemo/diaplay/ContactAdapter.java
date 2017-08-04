@@ -46,19 +46,19 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactH
     @Override
     public void onBindViewHolder(ContactHolder holder, int position) {
         ContactInfo info = contactList.get(position);
-        holder.nameTv.setText(info.getContactName());
-        if (info.getPhoneNumList() != null && info.getPhoneNumList().size() > 0) {
-            holder.phoneTv.setText(info.getPhoneNumList().get(0));
+        holder.nameTv.setText(info.contactName);
+        if (info.phoneNumList != null && info.phoneNumList.size() > 0) {
+            holder.phoneTv.setText(info.phoneNumList.get(0));
         }
         if (position > 0) {
-            lastLetter = contactList.get(position - 1).getIndexFlag();
+            lastLetter = contactList.get(position - 1).indexFlag;
         } else {
             lastLetter = "";
         }
-        if (lastLetter.equals(info.getIndexFlag())) {
+        if (lastLetter.equals(info.indexFlag)) {
             holder.indexTv.setVisibility(View.GONE);
         } else {
-            holder.indexTv.setText(info.getIndexFlag());
+            holder.indexTv.setText(info.indexFlag);
             holder.indexTv.setVisibility(View.VISIBLE);
         }
 

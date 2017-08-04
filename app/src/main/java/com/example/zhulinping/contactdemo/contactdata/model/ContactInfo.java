@@ -1,6 +1,7 @@
 package com.example.zhulinping.contactdemo.contactdata.model;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.example.zhulinping.contactdemo.view.slidebar.Indexable;
 
@@ -17,52 +18,33 @@ public class ContactInfo extends ContactDbInfo implements Indexable {
     public static final String FAVOURITE_FLAG = "$";
     public static final String RECENT_FLAG = "%";
     //是否是最近联系热 1-是 0-不是
-    private int isRecentContact;
-    private String firstLetter;
-    private String indexFlag;
-
-    public String getIndexFlag() {
-        return indexFlag;
-    }
-
-    public void setIndexFlag(String indexFlag) {
-        this.indexFlag = indexFlag;
-    }
-
-    public long getLastContactTime() {
-        return lastContactTime;
-    }
-
-    public void setLastContactTime(long lastContactTime) {
-        this.lastContactTime = lastContactTime;
-    }
-
-    private long lastContactTime;
-
-    public int getIsRecentContact() {
-        return isRecentContact;
-    }
-
-    public void setIsRecentContact(int isRecentContact) {
-        this.isRecentContact = isRecentContact;
-    }
-
-    public String getFirstLetter() {
-        return firstLetter;
-    }
-
-    public void setFirstLetter(String firstLetter) {
-        this.firstLetter = firstLetter;
-    }
-
+    public int isRecentContact;
+    public String firstLetter;
+    public String indexFlag;
+    public long lastContactTime;
+    public String lookupUri;
+    public String note;
+    public String phone;
     @Override
     public String getIndex() {
         if (indexFlag.equals(FAVOURITE_FLAG)) {
-            return "⭐";
+            return "☆";
         } else if (indexFlag.equals(RECENT_FLAG)) {
             return "*";
         } else {
             return indexFlag;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ContactInfo)) {
+            return false;
+        }
+        ContactInfo target = (ContactInfo) o;
+        if (target.contactName == null) {
+            return false;
+        }
+        return TextUtils.equals(this.contactName, target.contactName);
     }
 }

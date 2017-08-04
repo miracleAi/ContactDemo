@@ -42,16 +42,16 @@ public class ContactIndexAdapter extends BaseAdapter<ContactInfo,ContactIndexAda
     @Override
     public void onBindViewHolder(ContactHolder holder, int position) {
         holder.mRoot.setSwipeAble(false);
-        holder.nameTv.setText(getItem(position).getContactName());
-        if (getItem(position).getPhoneNumList() != null && getItem(position).getPhoneNumList().size() > 0) {
-            holder.phoneTv.setText(getItem(position).getPhoneNumList().get(0));
+        holder.nameTv.setText(getItem(position).contactName);
+        if (getItem(position).phoneNumList != null && getItem(position).phoneNumList.size() > 0) {
+            holder.phoneTv.setText(getItem(position).phoneNumList.get(0));
         }
 
     }
 
     @Override
     public long getHeaderId(int position) {
-        return getItem(position).getIndexFlag().charAt(0);
+        return getItem(position).indexFlag.charAt(0);
     }
 
     @Override
@@ -64,8 +64,7 @@ public class ContactIndexAdapter extends BaseAdapter<ContactInfo,ContactIndexAda
     @Override
     public void onBindHeaderViewHolder(RecyclerView.ViewHolder holder, int position) {
         TextView textView = (TextView) holder.itemView;
-        String headStr = String.valueOf(getItem(position).getIndexFlag());
-        Log.d("mytest","head--"+position+headStr);
+        String headStr = String.valueOf(getItem(position).indexFlag);
         if (ContactInfo.FAVOURITE_FLAG.equals(headStr)) {
             textView.setText(ContactInfo.FAVOURITE_FLAG_TXT);
         } else if (ContactInfo.RECENT_FLAG.equals(headStr)) {

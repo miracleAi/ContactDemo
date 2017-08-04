@@ -1,209 +1,231 @@
 package com.example.zhulinping.contactdemo.contactdata;
 
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
+import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.util.Log;
 
-import com.example.zhulinping.contactdemo.contactdata.model.ContactDbInfo;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
-import com.example.zhulinping.contactdemo.diaplay.ContactContact;
-import com.example.zhulinping.contactdemo.utils.CnToSpell;
 import com.example.zhulinping.contactdemo.utils.SortByFirstComparator;
 import com.example.zhulinping.contactdemo.utils.SortByTimeComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by zhulinping on 2017/7/28.
+ * Created by zhulinping on 2017/8/4.
  */
 
-public class ContactDataHelper implements IContactDataHelper {
-    private Context mContext;
-    //用于排除与最近联系人重合部分
-    private ArrayList<String> mFavouroteNames = new ArrayList<>();
-    //用于添加最近联系时间
-    private HashMap<String, Long> mRecentMap = new HashMap<>();
+public class ContactDataHelper implements IContactDataHelper,android.os.Handler.Callback{
+    private static String TAG = "test.contactdatahelper";
+    private static boolean DEBUG = true;
+    private static ContactDataHelper mInstance;
+    Context mContext;
+    private Handler mWorkHandler;
+    private volatile boolean isIniting;
+    //联系人列表，以人为维度
+    private List<ContactInfo> mContactDetailList = new ArrayList<ContactInfo>();
+    private List<ContactInfo> mRecentCallList = new ArrayList<ContactInfo>();
 
-    public ContactDataHelper(Context context) {
+    private Runnable mQueryContactTask = new Runnable() {
+        @Override
+        public void run() {
+                Log.i(TAG, "联系人变化了，重新搜索");
+                initData();
+        }
+    };
+
+    public static synchronized ContactDataHelper getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new ContactDataHelper(context);
+        }
+        return mInstance;
+    }
+
+    private ContactDataHelper(Context context) {
         mContext = context;
-    }
+        HandlerThread handlerThread = new HandlerThread("load_contact");
+        handlerThread.start();
+        mWorkHandler = new android.os.Handler(handlerThread.getLooper(), this);//todo 换到后台线程
 
-    //favourote contact
-    public ArrayList<ContactInfo> getFavouriteContact() {
-        ContentResolver contentResolver = mContext.getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,
-                ContactsContract.Contacts.STARRED + "=1", null,
-                ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
-        if (null == cursor || cursor.getCount() <= 0) {
-            return null;
-        }
-        ArrayList<ContactInfo> list = new ArrayList<>();
-        mFavouroteNames.clear();
-        while (cursor.moveToNext()) {
-            ContactInfo contact = createContactInfo(cursor, contentResolver);
-            contact.setIsFavourite(ContactDbInfo.IS_FAVOURITE);
-            contact.setIndexFlag(ContactInfo.FAVOURITE_FLAG);
-            list.add(contact);
-            mFavouroteNames.add(contact.getContactName());
-        }
-        if (null != cursor) {
-            cursor.close();
-        }
-        return list;
-    }
+        initDataSync();
 
-    //The last three days call record，except starred
-    public ArrayList<String> getRecentContact(int days) {
-        long time = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000;
-        ContentResolver contentResolver = mContext.getContentResolver();
-        @SuppressLint("MissingPermission") Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, //系统方式获取通讯录存储地址
-                new String[]{CallLog.Calls.CACHED_NAME,  //姓名
-                        CallLog.Calls.DATE}, CallLog.Calls.DATE + ">=" + String.valueOf(time), null,
-                CallLog.Calls.DEFAULT_SORT_ORDER);
-
-        if (null == cursor || cursor.getCount() == 0) {
-            return null;
-        }
-        ArrayList<String> recentList = new ArrayList<>();
-        mRecentMap.clear();
-        while (cursor.moveToNext()) {
-            String contactName = cursor.getString(cursor.getColumnIndex(
-                    CallLog.Calls.CACHED_NAME));
-            if (!mFavouroteNames.contains(contactName)) {
-                recentList.add(contactName);
-                long contactTime = cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE));
-                mRecentMap.put(contactName,contactTime);
+        //联系人变化监听:通话记录表 联系人表
+        //通话记录包括短信SMSConstant.CANONICAL_URI，因此移除之前短信监听
+        context.getContentResolver().registerContentObserver(CallLog.Calls.CONTENT_URI, false, new ContentObserver(mWorkHandler) {
+            @Override
+            public void onChange(boolean selfChange) {
+                onChange(selfChange, CallLog.Calls.CONTENT_URI);
             }
+
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                if (uri != null) {
+                    mWorkHandler.removeCallbacks(mQueryContactTask);
+                    mWorkHandler.postDelayed(mQueryContactTask, 300);
+                }
+            }
+        });
+        context.getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI, false, new ContentObserver(mWorkHandler) {
+            @Override
+            public void onChange(boolean selfChange) {
+                onChange(selfChange, ContactsContract.Contacts.CONTENT_URI);
+            }
+
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                if (uri != null) {
+                    mWorkHandler.removeCallbacks(mQueryContactTask);
+                    mWorkHandler.postDelayed(mQueryContactTask, 300);
+                }
+            }
+        });
+    }
+
+    private synchronized void initDataSync() {
+        mWorkHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                initData();
+            }
+        });
+    }
+
+    private synchronized void initData() {
+        if (isIniting) {
+            return;
         }
-        if(null != cursor){
-            cursor.close();
+        isIniting = true;
+        long time = System.currentTimeMillis();
+        if (DEBUG) {
+            Log.d(TAG, "============联系人相关数据初始化=============");
         }
-        return recentList;
+        //查取联系人表
+        mContactDetailList.clear();
+        List<ContactInfo> detailBeans = ContactDataUtils.getContactDetailList(mContext);
+        if (detailBeans != null) {
+            mContactDetailList.addAll(detailBeans);
+        }
+        if (DEBUG) {
+            Log.d(TAG, "initData: 加载联系人基本信息 cost=" + (System.currentTimeMillis() - time));
+        }
+
+        long time2 = System.currentTimeMillis();
+        ContactDataUtils.fillContactInfos(mContext, detailBeans);
+        if (DEBUG) {
+            Log.d(TAG, "initData: 加载联系人详细信息 cost=" + (System.currentTimeMillis() - time2));
+        }
+
+        //查取通话记录表
+        long time3 = System.currentTimeMillis();
+        mRecentCallList.clear();
+        List<ContactInfo> callBeans = ContactDataUtils.getRecentCalls(mContext);
+        if (callBeans != null) {
+            mRecentCallList.addAll(callBeans);
+        }
+        if (DEBUG) {
+            Log.d(TAG, "initData: 加载最近通话列表 cost=" + (System.currentTimeMillis() - time3));
+        }
+        isIniting = false;
+    }
+
+    public synchronized final List<ContactInfo> getContactDetailList() {
+        if (mContactDetailList.size() == 0) {
+            //尝试再获取一次
+            initData();
+        }
+        return new ArrayList<>(mContactDetailList);
+    }
+
+    public synchronized final List<ContactInfo> getRecentCallList() {
+        if (mRecentCallList.size() == 0) {
+            //尝试再获取一次
+            initData();
+        }
+        return new ArrayList<>(mRecentCallList);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        return false;
     }
 
     @Override
     public void getAllContactList(ContactLoadCallback callback, int days, int count) {
-        ArrayList<ContactInfo> favouriteList = getFavouriteContact();
-        ArrayList<String> callLogList = getRecentContact(days);
-        ContentResolver contentResolver = mContext.getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null,
-                ContactsContract.Contacts.STARRED + "=0", null,
-                ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
-        if (null == cursor || cursor.getCount() <= 0) {
-            callback.onContactListNotAvailable();
-            return;
-        }
+        long time = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000;
+        ArrayList<ContactInfo> contactList = new ArrayList<>();
+        ArrayList<ContactInfo> favouriteList = new ArrayList<>();
         ArrayList<ContactInfo> recentList = new ArrayList<>();
         ArrayList<ContactInfo> nomalList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            ContactInfo contact = createContactInfo(cursor, contentResolver);
-            contact.setIsFavourite(0);
-            if (recentList.size() < count && null != callLogList && callLogList.contains(contact.getContactName())) {
-                contact.setIsRecentContact(ContactInfo.IS_RECENT);
-                contact.setIndexFlag(ContactInfo.RECENT_FLAG);
-                recentList.add(contact);
-            } else {
-                contact.setIsRecentContact(0);
-                contact.setIndexFlag(contact.getFirstLetter());
-                nomalList.add(contact);
-            }
-        }
-        if (cursor != null) {
-            cursor.close();
-        }
-        convertList(favouriteList, recentList, nomalList, callback);
-    }
-    public ContactInfo createContactInfo(Cursor cursor, ContentResolver contentResolver) {
-        ContactInfo contact = new ContactInfo();
-        String contactId = cursor.getString(cursor.getColumnIndex(
-                ContactsContract.Contacts._ID));
-        contact.setContactId(contactId);
-        String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-        contact.setContactName(name);
-        contact.setFirstLetter(getFirstLetter(name));
-        String photo = cursor.getString(cursor.getColumnIndex(
-                ContactsContract.Contacts.PHOTO_URI));
-        contact.setPhoto(photo);
-        String photoThumbnail = cursor.getString(cursor.getColumnIndex(
-                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
-        contact.setPhotoThumbnail(photoThumbnail);
-        String isFavourite = cursor.getString(cursor.getColumnIndex(
-                ContactsContract.Contacts.STARRED));
-        contact.setIsFavourite(Integer.parseInt(isFavourite));
-        int phoneCount = Integer.parseInt(cursor.getString(cursor.getColumnIndex(
-                ContactsContract.Contacts.HAS_PHONE_NUMBER)));
-        if (phoneCount > 0) {
-            ArrayList<String> phoneList = new ArrayList<>();
-            Cursor phoneCursor = contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-                    , null
-                    , ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?"
-                    , new String[]{contactId}
-                    , null);
-            while (phoneCursor.moveToNext()) {
-                phoneList.add(phoneCursor.getString(phoneCursor.getColumnIndex(
-                        ContactsContract.CommonDataKinds.Phone.NUMBER)));
 
-            }
-            contact.setPhoneNumList(phoneList);
-            if (phoneCursor != null) {
-                phoneCursor.close();
-            }
-        }
-        //查询Email
-        Cursor emails = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                null,
-                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + contactId,
-                null, null);
-        if (null != cursor) {
-            ArrayList<String> emailList = new ArrayList<>();
-            while (emails.moveToNext()) {
-                emailList.add(emails.getString(emails.getColumnIndex(
-                        ContactsContract.CommonDataKinds.Email.DATA)));
-            }
-            emails.close();
-        }
-        return contact;
-    }
+        List<ContactInfo> contacts = getContactDetailList();
+        List<ContactInfo> recentCalls = getRecentCallList();
 
-    public void convertList(ArrayList<ContactInfo> fList, ArrayList<ContactInfo> rList,
-                            ArrayList<ContactInfo> nList, ContactLoadCallback callback) {
-        ArrayList<ContactInfo> allList = new ArrayList<>();
-        if (null != fList) {
-            Collections.sort(fList,new SortByFirstComparator());
-            allList.addAll(fList);
-        }
-        if (null != rList) {
-            Collections.sort(rList,new SortByTimeComparator());
-            allList.addAll(rList);
-        }
-        if (null != nList) {
-            Collections.sort(nList,new SortByFirstComparator());
-            allList.addAll(nList);
-        }
-        callback.onContactListLoaded(allList);
-    }
-
-    //获取首字母
-    public String getFirstLetter(String key) {
-        String sortString = key.substring(0, 1).toUpperCase();
-        if (sortString.matches("[A-Z]")) {
-            return sortString.toUpperCase();
-        } else {
-            String sortPy = CnToSpell.getFirstLetter(sortString).toUpperCase();
-            if (sortPy.matches("[A-Z]")) {
-                return sortPy;
-            } else {
-                return "#";
+        List<ContactInfo> temNomalList = new ArrayList<>();
+        if (contacts != null && contacts.size() > 0) {
+            for (ContactInfo bean : contacts) {
+                if (bean.isFavourite == ContactInfo.IS_FAVOURITE) {
+                    favouriteList.add(bean);
+                } else {
+                    temNomalList.add(bean);
+                }
             }
+        }
+        //最近通话中排除已收藏 ,保留最近三天,5个人
+        List<ContactInfo> temRecentList = new ArrayList<>();
+        if (recentCalls != null && recentCalls.size() > 0) {
+            for (ContactInfo bean : recentCalls) {
+                for (ContactInfo bean2 : favouriteList) {
+                    if (!bean2.equals(bean) && bean.lastContactTime >= time) {
+                        temRecentList.add(bean);
+                        break;
+                    }
+                }
+                if (temRecentList.size() >= 5) {
+                    break;
+                }
+            }
+        }
+        //非收藏联系人中排除最近联系
+        nomalList.addAll(temNomalList);
+        if (temRecentList.size() > 0) {
+            for (ContactInfo bean : temRecentList) {
+                for (ContactInfo info : temNomalList) {
+                    if (info.equals(bean)) {
+                        info.lastContactTime = bean.lastContactTime;
+                        info.isRecentContact = ContactInfo.IS_RECENT;
+                        info.indexFlag = ContactInfo.RECENT_FLAG;
+                        info.isFavourite = 0;
+                        recentList.add(info);
+                        nomalList.remove(info);
+                        break;
+                    }
+                }
+            }
+
+        }
+        if (favouriteList != null && favouriteList.size() > 0) {
+            Collections.sort(favouriteList, new SortByFirstComparator());
+            contactList.addAll(favouriteList);
+        }
+        if (recentList != null && recentList.size() > 0) {
+            Collections.sort(recentList, new SortByTimeComparator());
+            contactList.addAll(recentList);
+        }
+        if (nomalList != null && nomalList.size() > 0) {
+            Collections.sort(nomalList, new SortByFirstComparator());
+            contactList.addAll(nomalList);
+        }
+        if(contactList != null && contactList.size() > 0){
+            callback.onContactListLoaded(contactList);
+        }else{
+            callback.onContactListNotAvailable();
         }
     }
 }

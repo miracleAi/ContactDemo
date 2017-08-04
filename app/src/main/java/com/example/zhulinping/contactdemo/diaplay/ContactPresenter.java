@@ -1,12 +1,11 @@
 package com.example.zhulinping.contactdemo.diaplay;
 
 import android.app.Activity;
-import android.util.Log;
 
 import com.example.zhulinping.contactdemo.contactdata.IContactDataHelper;
+import com.example.zhulinping.contactdemo.contactdata.ContactDataHelper;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static android.os.AsyncTask.execute;
@@ -18,12 +17,10 @@ import static android.os.AsyncTask.execute;
 public class ContactPresenter implements ContactContact.Presenter,IContactDataHelper.ContactLoadCallback{
     public static  int RECENT_DAYS = 3;
     public static int RECENT_COUNT = 5;
-    private IContactDataHelper mDadaHelper;
     private ContactContact.View mContactView;
     private Activity mActivity;
-    public ContactPresenter(Activity activity,IContactDataHelper dataHelper, ContactContact.View contactView){
+    public ContactPresenter(Activity activity, ContactContact.View contactView){
         mActivity = activity;
-        mDadaHelper = dataHelper;
         mContactView = contactView;
         mContactView.setPresenter(this);
     }
@@ -39,7 +36,7 @@ public class ContactPresenter implements ContactContact.Presenter,IContactDataHe
         execute(new Runnable() {
             @Override
             public void run() {
-                mDadaHelper.getAllContactList(ContactPresenter.this,RECENT_DAYS,RECENT_COUNT);
+                ContactDataHelper.getInstance(mActivity).getAllContactList(ContactPresenter.this,RECENT_DAYS,RECENT_COUNT);
             }
         });
     }

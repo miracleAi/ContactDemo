@@ -11,12 +11,12 @@ import java.util.Comparator;
 public class SortByFirstComparator implements Comparator<ContactInfo>{
     @Override
     public int compare(ContactInfo contactInfo, ContactInfo t1) {
-        if(contactInfo.getFirstLetter().equals("#")){
+        if(contactInfo.firstLetter.equals("#")){
             return 1;
         }
-        if(t1.getFirstLetter().equals("#")){
+        if(t1.firstLetter.equals("#")){
             return -1;
         }
-            return contactInfo.getFirstLetter().compareTo(t1.getFirstLetter());
+            return contactInfo.firstLetter.compareTo(t1.firstLetter);
     }
 }

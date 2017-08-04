@@ -1,7 +1,6 @@
 package com.example.zhulinping.contactdemo;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -12,13 +11,9 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
-import com.example.zhulinping.contactdemo.contactdata.ContactDataHelper;
-import com.example.zhulinping.contactdemo.diaplay.ContactFragment;
+import com.example.zhulinping.contactdemo.contactdata.ContactDataUtils;
 import com.example.zhulinping.contactdemo.diaplay.ContactIndexFragment;
 import com.example.zhulinping.contactdemo.diaplay.ContactPresenter;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String CONTACT_FRAGMENT = "MainActivity.contactFtagment";
@@ -55,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             mCurrentFragment = fragment;
         }
         ft.commitAllowingStateLoss();
-        new ContactPresenter(MainActivity.this,new ContactDataHelper(getApplicationContext()),(ContactIndexFragment)mCurrentFragment);
+        new ContactPresenter(MainActivity.this,(ContactIndexFragment)mCurrentFragment);
     }
     private boolean checkPermission() {
         for(String permission : REQUIRED_PERMISSIONS) {
