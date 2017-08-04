@@ -27,15 +27,6 @@ import java.util.List;
 
 public class ContactDataUtils {
     private static String TAG = "test.zlp";
-    private Context mContext;
-    //用于排除与最近联系人重合部分
-    private ArrayList<String> mFavouroteNames = new ArrayList<>();
-    //用于添加最近联系时间
-    private HashMap<String, Long> mRecentMap = new HashMap<>();
-
-    public ContactDataUtils(Context context) {
-        mContext = context;
-    }
 
     /**
      * 获取包含联系人详细信息的表

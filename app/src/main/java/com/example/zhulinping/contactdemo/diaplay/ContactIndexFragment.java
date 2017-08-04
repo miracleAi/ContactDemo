@@ -33,24 +33,13 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
     ContactContact.Presenter mPresenter;
     private ContactIndexAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private ContentObserver mObserver;
     private ZSideBar mSlidBar;
-
-    Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            mPresenter.getContactList();
-        }
-    };
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.index_fragment_layout, null);
         intiView();
-        mObserver = new ContactObserver(mHandler);
-        getActivity().getApplicationContext().getContentResolver().registerContentObserver(CallLog.Calls.CONTENT_URI, true, mObserver);
         return mContentView;
     }
 
@@ -97,9 +86,5 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getActivity().getApplicationContext().getContentResolver().unregisterContentObserver(mObserver);
-        if (null != mHandler) {
-            mHandler = null;
-        }
     }
 }
