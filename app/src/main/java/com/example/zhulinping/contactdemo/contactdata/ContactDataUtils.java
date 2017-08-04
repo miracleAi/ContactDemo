@@ -7,8 +7,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.ecity.android.tinypinyin.Pinyin;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactDbInfo;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 import com.example.zhulinping.contactdemo.diaplay.ContactContact;
@@ -205,17 +207,25 @@ public class ContactDataUtils {
 
 
     //获取首字母
-    public static String getFirstLetter(String key) {
-        String sortString = key.substring(0, 1).toUpperCase();
-        if (sortString.matches("[A-Z]")) {
-            return sortString.toUpperCase();
-        } else {
-            String sortPy = CnToSpell.getFirstLetter(sortString).toUpperCase();
-            if (sortPy.matches("[A-Z]")) {
-                return sortPy;
+    private static String getFirstLetter(String key) {
+        String res = "#";
+        if (!TextUtils.isEmpty(key)) {
+            String sortString = key.substring(0, 1).toUpperCase();
+            if (sortString.matches("[A-Z]")) {
+                res = sortString.toUpperCase();
             } else {
-                return "#";
+                if (Pinyin.isChinese(sortString.charAt(0))) {
+                    String pin = Pinyin.toPinyin(sortString.charAt(0));
+                    if (pin.length() > 0) {
+                        return pin.substring(0, 1);
+                    }
+                    if (pin.matches("[A-Z]")) {
+                        res = pin;
+                    }
+                }
             }
         }
+        return res;
     }
+
 }
