@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.example.zhulinping.contactdemo.contactdata.ContactDataUtils;
 import com.example.zhulinping.contactdemo.diaplay.ContactIndexFragment;
@@ -32,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         }else{
             requestPermissions();
         }
-
     }
     private void selectFragment(String tag) {
         FragmentTransaction ft = mFragmentManager.beginTransaction();

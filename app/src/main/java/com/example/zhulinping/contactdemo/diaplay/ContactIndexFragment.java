@@ -1,11 +1,6 @@
 package com.example.zhulinping.contactdemo.diaplay;
 
-import android.database.ContentObserver;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.provider.CallLog;
-import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.zhulinping.contactdemo.R;
+import com.example.zhulinping.contactdemo.contactdata.AlphabeticIndexCompat;
 import com.example.zhulinping.contactdemo.contactdata.model.ContactInfo;
 import com.example.zhulinping.contactdemo.view.recyclerViewAdapter.DividerDecoration;
 import com.example.zhulinping.contactdemo.view.recyclerViewAdapter.expand.StickyRecyclerHeadersDecoration;
@@ -34,17 +30,24 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
     private ContactIndexAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private ZSideBar mSlidBar;
+    AlphabeticIndexCompat compat;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.index_fragment_layout, null);
         intiView();
+        compat = new AlphabeticIndexCompat(getActivity());
+        Log.d("mytest",compat.computeSectionName("こなん"));
+        Log.d("mytest",compat.computeSectionName("한국어"));
+        Log.d("mytest",compat.computeSectionName("hello"));
+        Log.d("mytest",compat.computeSectionName("你"));
+
         return mContentView;
     }
 
     private void intiView() {
-        mSlidBar = mContentView.findViewById(R.id.contact_zsidebar);
+        mSlidBar = (ZSideBar) mContentView.findViewById(R.id.contact_zsidebar);
         mRecyclerView = (RecyclerView) mContentView.findViewById(R.id.contact_lv);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         mAdapter = new ContactIndexAdapter(new ArrayList<ContactInfo>());
@@ -60,6 +63,9 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
             }
         });
         mSlidBar.setupWithRecycler(mRecyclerView);
+    }
+    public void testIndex(){
+
     }
 
     @Override

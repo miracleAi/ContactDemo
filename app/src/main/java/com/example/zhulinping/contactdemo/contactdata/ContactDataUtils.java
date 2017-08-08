@@ -207,7 +207,7 @@ public class ContactDataUtils {
 
 
     //获取首字母
-    private static String getFirstLetter(String key) {
+    public static String getFirstLetter(String key) {
         String res = "#";
         if (!TextUtils.isEmpty(key)) {
             String sortString = key.substring(0, 1).toUpperCase();

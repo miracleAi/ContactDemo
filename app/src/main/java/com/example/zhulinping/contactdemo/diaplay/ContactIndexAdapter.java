@@ -86,7 +86,7 @@ public class ContactIndexAdapter extends BaseAdapter<ContactInfo,ContactIndexAda
             nameTv = (TextView) itemView.findViewById(R.id.name_tv);
             headImv = (ImageView) itemView.findViewById(R.id.head_imv);
             phoneTv = (TextView) itemView.findViewById(R.id.phone_tv);
-            mRoot = itemView.findViewById(R.id.item_contact_swipe_root);
+            mRoot = (SwipeItemLayout) itemView.findViewById(R.id.item_contact_swipe_root);
         }
     }
 }
