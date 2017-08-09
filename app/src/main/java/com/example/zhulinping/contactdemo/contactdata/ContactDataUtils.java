@@ -35,6 +35,7 @@ public class ContactDataUtils {
      */
     public static List<ContactInfo> getContactDetailList(Context context) {
         Cursor cursor = null;
+        AlphabeticIndexCompat compat = new AlphabeticIndexCompat(context);
         try {
             ContentResolver contentResolver = context.getContentResolver();
             String[] projection = {ContactsContract.Contacts._ID,
@@ -65,14 +66,14 @@ public class ContactDataUtils {
                 if (contact.isFavourite == ContactInfo.IS_FAVOURITE) {
                     contact.indexFlag = ContactInfo.FAVOURITE_FLAG;
                 } else {
-                    contact.indexFlag = contact.firstLetter;
+                    contact.indexFlag = compat.computeSectionName(contact.firstLetter);
                 }
                 list.add(contact);
             }
             return list;
 
         } catch (Exception e) {
-                Log.e(TAG, "", e);
+            Log.e(TAG, "", e);
             return null;
         } finally {
             cursor.close();
@@ -134,9 +135,9 @@ public class ContactDataUtils {
                     }
                 }
             } catch (Exception e) {
-                    Log.e(TAG, "fillContactInfos: ", e);
+                Log.e(TAG, "fillContactInfos: ", e);
             } finally {
-               phoneCursor.close();
+                phoneCursor.close();
             }
         }
     }
@@ -168,7 +169,7 @@ public class ContactDataUtils {
                 }
             }
         } catch (Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
         } finally {
             cursor.close();
         }
@@ -176,7 +177,7 @@ public class ContactDataUtils {
         return list;
     }
 
-    public  static void fillContactName(Context context, List<ContactInfo> list) {
+    public static void fillContactName(Context context, List<ContactInfo> list) {
         if (list == null) {
             return;
         }
@@ -188,7 +189,7 @@ public class ContactDataUtils {
                         ContactsContract.CommonDataKinds.Phone.CONTENT_URI, new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME},
                         ContactsContract.CommonDataKinds.Phone.NUMBER + " = ? or "
                                 + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " = ?",
-                        new String[]{bean.phone,bean.phone}, null);
+                        new String[]{bean.phone, bean.phone}, null);
                 if (phoneCursor != null) {
                     phoneCursor.moveToPosition(-1);
                     if (phoneCursor.moveToNext()) {
@@ -198,34 +199,41 @@ public class ContactDataUtils {
                     }
                 }
             } catch (Exception e) {
-                    e.printStackTrace();
+                e.printStackTrace();
             } finally {
                 phoneCursor.close();
             }
         }
     }
 
-
-    //获取首字母
-    public static String getFirstLetter(String key) {
+    public static String getFirstLetter(String name) {
         String res = "#";
-        if (!TextUtils.isEmpty(key)) {
-            String sortString = key.substring(0, 1).toUpperCase();
-            if (sortString.matches("[A-Z]")) {
-                res = sortString.toUpperCase();
-            } else {
-                if (Pinyin.isChinese(sortString.charAt(0))) {
-                    String pin = Pinyin.toPinyin(sortString.charAt(0));
-                    if (pin.length() > 0) {
-                        return pin.substring(0, 1);
-                    }
-                    if (pin.matches("[A-Z]")) {
-                        res = pin;
-                    }
+        for (int i = 0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+            //只有汉字才有这种处理
+            if (!Pinyin.isChinese(ch)) {
+                if (i == 0) {
+                    res = getFirst(ch);
+                }
+                continue;
+            }
+            String pinyin = Pinyin.toPinyin(ch);
+            if (!TextUtils.isEmpty(pinyin)) {
+                char firstLetter = pinyin.charAt(0);
+                if (i == 0) {
+                    res = getFirst(firstLetter);
                 }
             }
         }
         return res;
     }
 
+    //获取非拼音字母
+    public static String getFirst(char key) {
+        if (Character.isLetter(key)) {
+            return String.valueOf(key).toUpperCase();
+        } else {
+            return "#";
+        }
+    }
 }

@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class AlphabeticIndexCompat {
     private static final String TAG = "AlphabeticIndexCompat";
 
-    private static final String MID_DOT = "•";
+    private static final String MID_DOT = "#";
     private final BaseIndex mBaseIndex;
     private final String mDefaultMiscLabel;
 
