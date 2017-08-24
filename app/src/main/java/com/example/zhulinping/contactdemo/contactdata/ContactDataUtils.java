@@ -140,13 +140,13 @@ public class ContactDataUtils {
                             phoneNum = PhoneNumberUtils.normalizeNumber(value);
                         }else{
                             phoneNum = value;
-                            if (phoneMap.containsKey(contactId)) {
-                                phoneMap.get(contactId).add(phoneNum);
-                            } else {
-                                List<String> list = new ArrayList<>();
-                                list.add(phoneNum);
-                                phoneMap.put(contactId, list);
-                            }
+                        }
+                        if (phoneMap.containsKey(contactId)) {
+                            phoneMap.get(contactId).add(phoneNum);
+                        } else {
+                            List<String> list = new ArrayList<>();
+                            list.add(phoneNum);
+                            phoneMap.put(contactId, list);
                         }
                         break;
                     }
