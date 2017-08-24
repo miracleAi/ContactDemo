@@ -122,6 +122,13 @@ public class ContactDataUtils {
                 switch (type) {
                     case TYPE_EMAIL: {
                         emailNum = value;
+                        if (emailMap.containsKey(contactId)) {
+                            emailMap.get(contactId).add(emailNum);
+                        } else {
+                            List<String> list = new ArrayList<>();
+                            list.add(emailNum);
+                            emailMap.put(contactId, list);
+                        }
                         break;
                     }
                     case TYPE_NOTE: {
@@ -133,23 +140,16 @@ public class ContactDataUtils {
                             phoneNum = PhoneNumberUtils.normalizeNumber(value);
                         }else{
                             phoneNum = value;
+                            if (phoneMap.containsKey(contactId)) {
+                                phoneMap.get(contactId).add(phoneNum);
+                            } else {
+                                List<String> list = new ArrayList<>();
+                                list.add(phoneNum);
+                                phoneMap.put(contactId, list);
+                            }
                         }
                         break;
                     }
-                }
-                if (phoneMap.containsKey(contactId)) {
-                    phoneMap.get(contactId).add(phoneNum);
-                } else {
-                    List<String> list = new ArrayList<>();
-                    list.add(phoneNum);
-                    phoneMap.put(contactId, list);
-                }
-                if (emailMap.containsKey(contactId)) {
-                    emailMap.get(contactId).add(emailNum);
-                } else {
-                    List<String> list = new ArrayList<>();
-                    list.add(emailNum);
-                    emailMap.put(contactId, list);
                 }
             }
             for (ContactInfo bean : source) {
