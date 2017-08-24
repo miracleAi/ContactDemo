@@ -19,6 +19,9 @@ import com.example.zhulinping.contactdemo.view.slidebar.ZSideBar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import bolts.Task;
 
 /**
  * Created by zhulinping on 2017/8/1.
@@ -38,11 +41,6 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
         mContentView = inflater.inflate(R.layout.index_fragment_layout, null);
         intiView();
         compat = new AlphabeticIndexCompat(getActivity());
-        Log.d("mytest",compat.computeSectionName("こなん"));
-        Log.d("mytest",compat.computeSectionName("한국어"));
-        Log.d("mytest",compat.computeSectionName("hello"));
-        Log.d("mytest",compat.computeSectionName("你"));
-
         return mContentView;
     }
 
@@ -63,9 +61,6 @@ public class ContactIndexFragment extends Fragment implements ContactContact.Vie
             }
         });
         mSlidBar.setupWithRecycler(mRecyclerView);
-    }
-    public void testIndex(){
-
     }
 
     @Override

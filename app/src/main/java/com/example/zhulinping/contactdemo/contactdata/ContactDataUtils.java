@@ -5,8 +5,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zhulinping on 2017/7/28.
@@ -86,59 +89,96 @@ public class ContactDataUtils {
             return;
         }
 
-        final String[] projection = new String[]{ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1};
+        final String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1};
         final String TYPE_PHONE = ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE;
         final String TYPE_EMAIL = ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE;
         final String TYPE_NOTE = ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE;
-        String select = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?" + " and (" + ContactsContract.Data.MIMETYPE + " = '" + TYPE_EMAIL + "' or "
+        String select = "(" + ContactsContract.Data.MIMETYPE + " = '" + TYPE_EMAIL + "' or "
                 + ContactsContract.Data.MIMETYPE + "='" + TYPE_NOTE + "' or "
                 + ContactsContract.Data.MIMETYPE + "='" + TYPE_PHONE + "')";
-
         ContentResolver contentResolver = context.getContentResolver();
-        for (ContactInfo bean : source) {
-            if (bean.contactId < 0) {
-                continue;
+        Map<String, List<String>> phoneMap = new HashMap<>();
+        Map<String, List<String>> emailMap = new HashMap<>();
+        Map<String, String> noteMap = new HashMap<>();
+        //电话
+        Cursor phoneCursor = null;
+        try {
+            phoneCursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI
+                    , projection
+                    , select
+                    , null
+                    , null);
+            if (phoneCursor == null) {
+                return;
             }
-
-            bean.phoneNumList.clear();
-            bean.emailList.clear();
-
-            //电话
-            Cursor phoneCursor = null;
-            try {
-                phoneCursor = contentResolver.query(
-                        ContactsContract.Data.CONTENT_URI
-                        , projection
-                        , select
-                        , new String[]{String.valueOf(bean.contactId)}
-                        , null);
-                if (phoneCursor == null) {
-                    continue;
-                }
-                phoneCursor.moveToPosition(-1);
-                while (phoneCursor.moveToNext()) {
-                    String type = phoneCursor.getString(0);
-                    String value = phoneCursor.getString(1);
-                    switch (type) {
-                        case TYPE_EMAIL: {
-                            bean.emailList.add(value);
-                            break;
+            phoneCursor.moveToPosition(-1);
+            String phoneNum = "";
+            String emailNum = "";
+            while (phoneCursor.moveToNext()) {
+                String contactId = phoneCursor.getString(0);
+                String type = phoneCursor.getString(1);
+                String value = phoneCursor.getString(2);
+                switch (type) {
+                    case TYPE_EMAIL: {
+                        emailNum = value;
+                        break;
+                    }
+                    case TYPE_NOTE: {
+                        noteMap.put(contactId, value);
+                        break;
+                    }
+                    case TYPE_PHONE: {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            phoneNum = PhoneNumberUtils.normalizeNumber(value);
+                        }else{
+                            phoneNum = value;
                         }
-                        case TYPE_NOTE: {
-                            bean.note = value;
-                            break;
-                        }
-                        case TYPE_PHONE: {
-                            bean.phoneNumList.add(value);
-                            break;
-                        }
+                        break;
                     }
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "fillContactInfos: ", e);
-            } finally {
-                phoneCursor.close();
+                if (phoneMap.containsKey(contactId)) {
+                    phoneMap.get(contactId).add(phoneNum);
+                } else {
+                    List<String> list = new ArrayList<>();
+                    list.add(phoneNum);
+                    phoneMap.put(contactId, list);
+                }
+                if (emailMap.containsKey(contactId)) {
+                    emailMap.get(contactId).add(emailNum);
+                } else {
+                    List<String> list = new ArrayList<>();
+                    list.add(emailNum);
+                    emailMap.put(contactId, list);
+                }
             }
+            for (ContactInfo bean : source) {
+                if (bean.contactId < 0) {
+                    continue;
+                }
+                String contactId = String.valueOf(bean.contactId);
+                if (phoneMap.containsKey(contactId)) {
+                    bean.phoneNumList.addAll(phoneMap.get(contactId));
+                }
+                if (emailMap.containsKey(contactId)) {
+                    bean.emailList.addAll(emailMap.get(contactId));
+                }
+                if (noteMap.containsKey(contactId)) {
+                    bean.note = noteMap.get(contactId);
+                }
+                //处理姓名为空的情况
+                if (TextUtils.isEmpty(bean.contactName)) {
+                    if (bean.phoneNumList != null && bean.phoneNumList.size() > 0) {
+                        bean.contactName = bean.phoneNumList.iterator().next();
+                    } else if (bean.emailList != null && bean.emailList.size() > 0) {
+                        bean.contactName = bean.phoneNumList.iterator().next();
+                    }
+                }
+            }
+        } catch (Exception e) {
+                Log.e(TAG, "fillContactInfos: ", e);
+        } finally {
+            phoneCursor.close();
         }
     }
 

@@ -32,7 +32,7 @@ public class ContactDataHelper implements IContactDataHelper,android.os.Handler.
     //联系人列表，以人为维度
     private List<ContactInfo> mContactDetailList = new ArrayList<ContactInfo>();
     private List<ContactInfo> mRecentCallList = new ArrayList<ContactInfo>();
-
+    //联系人变化后更新数据，但是没有通知ui更新
     private Runnable mQueryContactTask = new Runnable() {
         @Override
         public void run() {
