@@ -44,18 +44,18 @@ public class BackupAndRestoreActivity extends AppCompatActivity implements View.
                 contactsBackup();
                 break;
             case R.id.btn_restore:
-                //contactsRestore();
+                contactsRestore();
                 break;
         }
     }
 
     //通讯录备份
     public void contactsBackup() {
-        tvBackupPath.setText("read contacts ing……");
+        tvBackupPath.setText(" contacts backuping……");
         Task.callInBackground(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return SystemContactsUtils.backup(BackupAndRestoreActivity.this);
+                return SystemContactsUtils.getInstance().backup(BackupAndRestoreActivity.this);
             }
         }).onSuccess(new Continuation<String, Object>() {
             @Override
@@ -71,5 +71,27 @@ public class BackupAndRestoreActivity extends AppCompatActivity implements View.
                 return null;
             }
         }, Task.UI_THREAD_EXECUTOR);
+    }
+    //通讯录还原
+    public void contactsRestore(){
+        tvRstorePath.setText("contacts restoring ……");
+        Task.callInBackground(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return SystemContactsUtils.getInstance().restore(BackupAndRestoreActivity.this);
+            }
+        }).onSuccess(new Continuation<Boolean, Object>() {
+            @Override
+            public Object then(Task<Boolean> task) throws Exception {
+                tvRstorePath.setText(" restore done");
+                boolean result = task.getResult();
+                if(result){
+                    tvResult.setText("restore success");
+                }else {
+                    tvResult.setText("restore fail");
+                }
+                return null;
+            }
+        },Task.UI_THREAD_EXECUTOR);
     }
 }

@@ -5,7 +5,7 @@ package com.example.zhulinping.contactdemo.backandrestore.vcard;
  */
 
 public class VCardConstants {
-    /* package */ static final String LOG_TAG = "vCard";
+    public static final String LOG_TAG = "vCard";
     public static final String VERSION_V21 = "2.1";
     public static final String VERSION_V30 = "3.0";
     public static final String VERSION_V40 = "4.0";
