@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.zhulinping.contactdemo.view.swipitemlayout.SwipeItemLayout
+<com.example.zhulinping.contactdemo.contactdisplay.view.swipitemlayout.SwipeItemLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/item_contact_swipe_root"
@@ -38,4 +38,4 @@
         android:layout_marginLeft="10dp"/>
 
 </LinearLayout>
-</com.example.zhulinping.contactdemo.view.swipitemlayout.SwipeItemLayout>
+</com.example.zhulinping.contactdemo.contactdisplay.view.swipitemlayout.SwipeItemLayout>

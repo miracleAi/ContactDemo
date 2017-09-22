@@ -11,7 +11,7 @@
             android:layout_height="match_parent">
 
         </android.support.v7.widget.RecyclerView>
-        <com.example.zhulinping.contactdemo.view.slidebar.ZSideBar
+        <com.example.zhulinping.contactdemo.contactdisplay.view.slidebar.ZSideBar
             android:id="@+id/contact_zsidebar"
             android:layout_width="24dp"
             android:layout_height="match_parent"
